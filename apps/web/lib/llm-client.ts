@@ -2,7 +2,11 @@ import "server-only";
 
 import OpenAI from "openai";
 
-import type { ChatMessage } from "@/lib/chat-schema";
+import {
+  isImageAttachment,
+  type ChatAttachment,
+  type ChatMessage,
+} from "@/lib/chat-schema";
 import { ConfigError, EmptyProviderResponseError } from "@/lib/errors";
 
 const SYSTEM_PROMPT =
@@ -48,7 +52,7 @@ export async function createCompletionStream(
   if (settings.baseURL) {
     const providerMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
       { role: "system", content: SYSTEM_PROMPT },
-      ...messages.map((message) => ({ role: message.role, content: message.content })),
+      ...messages.map(toChatCompletionMessage),
     ];
     const stream = await client.chat.completions.create({
       model: settings.model,
@@ -70,8 +74,20 @@ export async function createCompletionStream(
     instructions: SYSTEM_PROMPT,
     input: messages.map((message) => ({
       role: message.role,
-      content: message.content,
-    })),
+      content:
+        message.role === "user"
+          ? [
+              { type: "input_text", text: textWithAttachments(message) },
+              ...(message.attachments ?? [])
+                .filter(isImageAttachment)
+                .map((attachment) => ({
+                  type: "input_image",
+                  image_url: attachment.dataUrl,
+                  detail: "auto",
+                })),
+            ]
+          : [{ type: "input_text", text: message.content }],
+    })) as never,
     stream: true,
   });
   return {
@@ -85,6 +101,43 @@ export async function createCompletionStream(
       }
     },
   };
+}
+
+function toChatCompletionMessage(
+  message: ChatMessage,
+): OpenAI.Chat.Completions.ChatCompletionMessageParam {
+  if (message.role === "assistant") {
+    return { role: "assistant", content: message.content };
+  }
+
+  const content: OpenAI.Chat.Completions.ChatCompletionContentPart[] = [
+    { type: "text", text: textWithAttachments(message) },
+    ...(message.attachments ?? [])
+      .filter(isImageAttachment)
+      .map((attachment) => ({
+        type: "image_url" as const,
+        image_url: { url: attachment.dataUrl, detail: "auto" as const },
+      })),
+  ];
+  return { role: "user", content };
+}
+
+function textWithAttachments(message: ChatMessage): string {
+  const files = (message.attachments ?? []).filter(
+    (attachment) => !isImageAttachment(attachment),
+  );
+  if (!files.length) return message.content;
+
+  const sections = files.map(
+    (attachment) =>
+      `\n\n--- فایل: ${attachment.name} ---\n${decodeTextAttachment(attachment)}`,
+  );
+  return message.content + sections.join("");
+}
+
+function decodeTextAttachment(attachment: ChatAttachment): string {
+  const encoded = attachment.dataUrl.split(",", 2)[1] ?? "";
+  return Buffer.from(encoded, "base64").toString("utf8").slice(0, 100_000);
 }
 
 export async function createCompletion(messages: ChatMessage[]): Promise<string> {

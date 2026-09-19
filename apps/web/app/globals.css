@@ -82,18 +82,30 @@ textarea:focus-visible {
   place-items: center;
 }
 
-.chat-shell {
-  width: min(100%, 64rem);
-  height: min(54rem, calc(100vh - 2rem));
-  min-height: 38rem;
+.workspace-shell {
+  width: min(100%, 90rem);
+  height: min(56rem, calc(100vh - 2rem));
+  min-height: 40rem;
   display: grid;
-  grid-template-rows: auto 1fr auto auto;
+  grid-template-columns: 18rem minmax(0, 1fr);
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 1.25rem;
   background: var(--panel);
-  box-shadow: 0 2rem 6rem rgba(0, 0, 0, 0.28), inset 0 1px rgba(255, 255, 255, 0.04);
+  box-shadow: 0 2rem 6rem rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(16px);
+}
+
+.chat-shell {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  overflow: hidden;
+  border-right: 1px solid var(--line);
+  background: transparent;
   transition: background 180ms ease, border-color 180ms ease;
 }
 
@@ -383,7 +395,9 @@ h1 {
   position: relative;
   margin: 0 clamp(0.75rem, 2vw, 1.25rem) clamp(0.75rem, 2vw, 1.25rem);
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template:
+    "attachments attachments" auto
+    "input actions" 1fr / minmax(0, 1fr) auto;
   gap: 0.65rem;
   padding: 0.65rem;
   border: 1px solid var(--line);
@@ -392,6 +406,7 @@ h1 {
 }
 
 .composer textarea {
+  grid-area: input;
   width: 100%;
   min-height: 3.3rem;
   max-height: 10rem;
@@ -409,6 +424,17 @@ h1 {
 
 .composer textarea::placeholder {
   color: #6f7e75;
+  direction: rtl;
+  text-align: right;
+}
+
+.composer textarea[dir="rtl"] {
+  text-align: right;
+}
+
+.composer textarea[dir="ltr"] {
+  text-align: left;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
 }
 
 .send-button {
@@ -447,9 +473,320 @@ h1 {
   border: 0;
 }
 
+.history-sidebar {
+  min-width: 0;
+  padding: 1.2rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--composer) 88%, transparent);
+}
+
+.history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.history-heading span {
+  color: var(--green);
+  font: 700 0.62rem/1.4 ui-monospace, Consolas, monospace;
+  letter-spacing: 0.16em;
+}
+
+.history-heading h2 {
+  margin: 0.15rem 0 0;
+  font-size: 1.15rem;
+}
+
+.sidebar-close,
+.history-toggle {
+  display: none;
+}
+
+.new-chat-button {
+  width: 100%;
+  min-height: 2.8rem;
+  border: 1px solid rgba(131, 240, 165, 0.34);
+  border-radius: 0.8rem;
+  color: var(--ink);
+  background: rgba(131, 240, 165, 0.09);
+  font-weight: 700;
+}
+
+.conversation-list {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.conversation-list li {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+}
+
+.conversation-list li:hover,
+.conversation-list .conversation-active {
+  border-color: var(--line);
+  background: var(--surface);
+}
+
+.conversation-select,
+.conversation-delete {
+  border: 0;
+  color: var(--ink);
+  background: transparent;
+}
+
+.conversation-select {
+  min-width: 0;
+  padding: 0.7rem;
+  text-align: right;
+}
+
+.conversation-select strong,
+.conversation-select time {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.conversation-select strong {
+  font-size: 0.82rem;
+}
+
+.conversation-select time {
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.66rem;
+}
+
+.conversation-delete {
+  width: 2rem;
+  height: 2rem;
+  color: var(--muted);
+  font-size: 1.2rem;
+}
+
+.conversation-delete:hover {
+  color: var(--danger);
+}
+
+.history-empty {
+  margin: 1rem 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.database-badge {
+  margin: auto 0 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.database-badge .status-light {
+  width: 0.42rem;
+  height: 0.42rem;
+}
+
+.composer-actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.attach-button {
+  width: 2.9rem;
+  height: 2.9rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  color: var(--green);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 1.3rem;
+}
+
+.attach-button input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.attachment-list {
+  grid-area: attachments;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.attachment-list li {
+  max-width: 15rem;
+  padding: 0.3rem 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+  background: var(--surface);
+  font-size: 0.72rem;
+}
+
+.attachment-list img,
+.attachment-list li > span:first-child {
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  border-radius: 0.4rem;
+  object-fit: cover;
+}
+
+.attachment-list li > span:first-child {
+  display: grid;
+  place-items: center;
+  color: var(--green);
+  font: 700 0.55rem ui-monospace, monospace;
+}
+
+.attachment-list li > span:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-list button {
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  font-size: 1rem;
+}
+
+.attachment-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.72rem;
+}
+
+.message-attachments {
+  margin-bottom: 0.65rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.message-attachments img {
+  max-width: min(20rem, 100%);
+  max-height: 16rem;
+  border-radius: 0.75rem;
+  object-fit: contain;
+}
+
+.message-attachments span {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  font-size: 0.75rem;
+}
+
+.markdown-content {
+  white-space: normal;
+}
+
+.markdown-content > :first-child {
+  margin-top: 0;
+}
+
+.markdown-content > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown-content p,
+.markdown-content ul,
+.markdown-content ol,
+.markdown-content pre,
+.markdown-content blockquote {
+  margin: 0.55rem 0;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  padding-inline-start: 1.4rem;
+}
+
+.markdown-content code {
+  direction: ltr;
+  padding: 0.12rem 0.35rem;
+  border-radius: 0.35rem;
+  background: rgba(0, 0, 0, 0.18);
+  font: 0.88em/1.6 ui-monospace, Consolas, monospace;
+}
+
+.markdown-content pre {
+  direction: ltr;
+  overflow-x: auto;
+  padding: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  text-align: left;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.markdown-content pre code {
+  padding: 0;
+  background: transparent;
+}
+
+.markdown-content a {
+  color: var(--green);
+}
+
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.markdown-content th,
+.markdown-content td {
+  padding: 0.4rem;
+  border: 1px solid var(--line);
+}
+
+.sidebar-backdrop {
+  display: none;
+}
+
 @media (max-width: 640px) {
   .app-frame {
     padding: 0;
+  }
+
+  .workspace-shell {
+    width: 100%;
+    height: 100dvh;
+    min-height: 100vh;
+    display: block;
+    border: 0;
+    border-radius: 0;
   }
 
   .chat-shell {
@@ -457,6 +794,52 @@ h1 {
     min-height: 100vh;
     border: 0;
     border-radius: 0;
+  }
+
+  .history-sidebar {
+    position: fixed;
+    z-index: 30;
+    inset: 0 0 0 auto;
+    width: min(20rem, 86vw);
+    transform: translateX(105%);
+    transition: transform 180ms ease;
+    box-shadow: -1rem 0 3rem rgba(0, 0, 0, 0.35);
+  }
+
+  .history-sidebar-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    z-index: 20;
+    inset: 0;
+    display: block;
+    border: 0;
+    background: rgba(0, 0, 0, 0.48);
+  }
+
+  .sidebar-close,
+  .history-toggle {
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--line);
+    color: var(--ink);
+    background: var(--surface);
+  }
+
+  .sidebar-close {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.7rem;
+    font-size: 1.4rem;
+  }
+
+  .history-toggle {
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: 0 0 auto;
+    border-radius: 0.7rem;
   }
 
   .chat-header {
@@ -472,6 +855,14 @@ h1 {
     min-height: 2.5rem;
     padding-inline: 0.55rem;
     font-size: 0.78rem;
+  }
+
+  .brand-block > div:last-child {
+    min-width: 0;
+  }
+
+  .connection-state {
+    white-space: nowrap;
   }
 
   .header-actions {
@@ -497,7 +888,7 @@ h1 {
   }
 
   .composer {
-    grid-template-columns: minmax(0, 1fr) auto;
+    margin-inline: 0.55rem;
   }
 
   .composer-hint {

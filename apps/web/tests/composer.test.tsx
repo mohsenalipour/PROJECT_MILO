@@ -10,6 +10,8 @@ describe("Composer", () => {
       <Composer value="سلام" disabled={false} onChange={vi.fn()} onSubmit={onSubmit} />,
     );
     const input = screen.getByLabelText("پیام شما برای مایلو");
+    expect(input).toHaveAttribute("dir", "rtl");
+    expect(input).toHaveAttribute("placeholder", "پیامتان را بنویسید…");
 
     fireEvent.keyDown(input, { key: "Enter", shiftKey: true });
     expect(onSubmit).not.toHaveBeenCalled();
@@ -18,4 +20,3 @@ describe("Composer", () => {
     expect(onSubmit).toHaveBeenCalledOnce();
   });
 });
-

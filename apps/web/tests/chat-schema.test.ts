@@ -41,4 +41,29 @@ describe("chatRequestSchema", () => {
     expect(chatRequestSchema.safeParse({ messages: tooMany }).success).toBe(false);
     expect(chatRequestSchema.safeParse(tooLong).success).toBe(false);
   });
+
+  it("accepts allowlisted attachments and rejects spoofed MIME data", () => {
+    const valid = {
+      messages: [
+        {
+          role: "user",
+          content: "این فایل را بخوان",
+          attachments: [
+            {
+              id: "file-1",
+              name: "note.txt",
+              type: "text/plain",
+              size: 5,
+              dataUrl: "data:text/plain;base64,c2FsYW0=",
+            },
+          ],
+        },
+      ],
+    };
+    const spoofed = structuredClone(valid);
+    spoofed.messages[0].attachments[0].type = "image/png";
+
+    expect(chatRequestSchema.safeParse(valid).success).toBe(true);
+    expect(chatRequestSchema.safeParse(spoofed).success).toBe(false);
+  });
 });

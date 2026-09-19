@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { chatRequestSchema, type ChatMessage } from "@/lib/chat-schema";
+import { saveMessage } from "@/lib/conversation-repository";
 import { EmptyProviderResponseError, toPublicError } from "@/lib/errors";
 import { createCompletionStream } from "@/lib/llm-client";
 import { encodeStreamEvent } from "@/lib/stream-protocol";
@@ -30,6 +31,10 @@ export async function handleChat(
   }
 
   try {
+    const conversationId = parsed.data.conversationId;
+    const userMessage = parsed.data.messages.at(-1)!;
+    if (conversationId) await saveMessage(conversationId, userMessage);
+
     const providerStream = await complete(parsed.data.messages);
     const iterator = providerStream[Symbol.asyncIterator]();
     const first = await iterator.next();
@@ -38,14 +43,22 @@ export async function handleChat(
     const model = process.env.OPENAI_MODEL?.trim() ?? "";
     const body = new ReadableStream<Uint8Array>({
       async start(controller) {
+        let answer = first.value;
         controller.enqueue(encodeStreamEvent({ type: "delta", delta: first.value }));
         try {
           while (true) {
             const next = await iterator.next();
             if (next.done) break;
             if (next.value) {
+              answer += next.value;
               controller.enqueue(encodeStreamEvent({ type: "delta", delta: next.value }));
             }
+          }
+          if (conversationId) {
+            await saveMessage(conversationId, {
+              role: "assistant",
+              content: answer.trim(),
+            });
           }
           controller.enqueue(encodeStreamEvent({ type: "done", model }));
         } catch (error) {
