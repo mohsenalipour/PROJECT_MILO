@@ -27,6 +27,7 @@
 - Console pytest: ۱۱ تست موفق
 - Console Ruff: موفق
 - Console AvalAI smoke test: پاسخ streaming واقعی دریافت شد
+- Console compatibility: رابط، خطاها و پاسخ مدل به انگلیسی محدود شد تا مشکل BiDi/RTL در Windows Terminal حذف شود؛ live prompt انگلیسی نیز با AvalAI تأیید شد.
 - Secret scan: فایل کلید track نشده، هیچ متغیر محرمانهٔ NEXT_PUBLIC_ در source وجود ندارد
 
 ## اجرای فعال

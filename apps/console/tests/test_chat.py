@@ -22,7 +22,7 @@ def test_empty_message_does_not_call_provider() -> None:
     provider = FakeProvider()
     session = ChatSession(provider)
 
-    with pytest.raises(MiloError, match="خالی"):
+    with pytest.raises(MiloError, match="empty"):
         session.send("   ")
 
     assert provider.calls == []

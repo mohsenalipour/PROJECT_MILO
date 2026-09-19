@@ -18,33 +18,33 @@ class MiloError(Exception):
 
 
 class ConfigError(MiloError):
-    def __init__(self, message: str = "تنظیمات سرویس کامل نیست؛ فایل `.env` را بررسی کنید."):
+    def __init__(self, message: str = "Provider settings are incomplete. Check the .env file."):
         super().__init__("CONFIG_MISSING", message, False)
 
 
 def translate_provider_error(error: Exception) -> MiloError:
     """Convert SDK/network failures without exposing raw provider details."""
     if isinstance(error, openai.AuthenticationError):
-        return MiloError("AUTH_FAILED", "کلید API پذیرفته نشد؛ تنظیمات را بررسی کنید.")
+        return MiloError("AUTH_FAILED", "The API key was rejected. Check your settings.")
     if isinstance(error, (openai.BadRequestError, openai.NotFoundError)):
         return MiloError(
             "MODEL_NOT_FOUND",
-            "شناسهٔ مدل یا نشانی سرویس برای این ارائه‌دهنده معتبر نیست.",
+            "The model ID or provider URL is not valid.",
         )
     if isinstance(error, openai.RateLimitError):
         return MiloError(
             "RATE_LIMITED",
-            "سرویس موقتاً شلوغ است یا اعتبار کافی نیست؛ کمی بعد دوباره تلاش کنید.",
+            "The service is busy or has insufficient credit. Please try again later.",
             True,
         )
     if isinstance(error, (openai.APITimeoutError, openai.APIConnectionError)):
         return MiloError(
             "PROVIDER_TIMEOUT",
-            "ارتباط با سرویس برقرار نشد؛ اینترنت و Base URL را بررسی کنید.",
+            "Could not reach the provider. Check your connection and Base URL.",
             True,
         )
     return MiloError(
         "PROVIDER_ERROR",
-        "سرویس مدل پاسخ معتبری نداد؛ کمی بعد دوباره تلاش کنید.",
+        "The model service did not return a valid response. Please try again later.",
         True,
     )

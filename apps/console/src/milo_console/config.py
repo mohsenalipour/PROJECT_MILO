@@ -33,12 +33,11 @@ def load_settings(*, load_env_file: bool = True) -> Settings:
     if not model:
         missing.append("OPENAI_MODEL")
     if missing:
-        raise ConfigError(f"تنظیمات الزامی کامل نیست: {', '.join(missing)}")
+        raise ConfigError(f"Required settings are missing: {', '.join(missing)}")
 
     if base_url:
         parsed = urlparse(base_url)
         if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-            raise ConfigError("مقدار OPENAI_BASE_URL باید یک نشانی معتبر http/https باشد.")
+            raise ConfigError("OPENAI_BASE_URL must be a valid HTTP or HTTPS URL.")
 
     return Settings(api_key=api_key, model=model, base_url=base_url)
-

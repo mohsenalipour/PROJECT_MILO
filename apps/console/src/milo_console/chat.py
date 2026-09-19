@@ -14,7 +14,8 @@ from .errors import MiloError, translate_provider_error
 SYSTEM_PROMPT = (
     "You are MILO, the helpful AI companion of PROJECT_MILO. "
     "Always speak as MILO in the first person and never claim to be another assistant. "
-    "Reply in the user's language, be warm, clear and concise, and never pretend "
+    "Always reply in English because this console targets terminals without reliable "
+    "bidirectional text support. Be warm, clear and concise, and never pretend "
     "that you performed actions you did not perform."
 )
 MAX_MESSAGES = 20
@@ -97,7 +98,7 @@ class OpenAIProvider:
         if not emitted:
             raise MiloError(
                 "PROVIDER_ERROR",
-                "سرویس مدل پاسخ متنی معتبری نداد؛ دوباره تلاش کنید.",
+                "The model did not return a valid text response. Please try again.",
                 True,
             )
 
@@ -117,11 +118,11 @@ class ChatSession:
     def send_stream(self, content: str) -> Iterator[str]:
         clean_content = content.strip()
         if not clean_content:
-            raise MiloError("INVALID_INPUT", "پیام نمی‌تواند خالی باشد.")
+            raise MiloError("INVALID_INPUT", "The message cannot be empty.")
         if len(clean_content) > MAX_CONTENT_LENGTH:
             raise MiloError(
                 "INVALID_INPUT",
-                f"پیام باید حداکثر {MAX_CONTENT_LENGTH} نویسه باشد.",
+                f"The message must be at most {MAX_CONTENT_LENGTH} characters.",
             )
 
         user_message = Message("user", clean_content)
@@ -136,7 +137,7 @@ class ChatSession:
         if not answer:
             raise MiloError(
                 "PROVIDER_ERROR",
-                "سرویس مدل پاسخ متنی معتبری نداد؛ دوباره تلاش کنید.",
+                "The model did not return a valid text response. Please try again.",
                 True,
             )
         assistant_message = Message("assistant", answer)

@@ -17,4 +17,4 @@ def test_clear_command_clears_the_active_session() -> None:
     run_repl(session, input_fn=lambda _: next(answers), output_fn=output.append)
 
     assert session.history == []
-    assert any("تاریخچه پاک شد" in line for line in output)
+    assert any("Conversation cleared" in line for line in output)
