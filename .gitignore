@@ -1,0 +1,28 @@
+# Secrets
+.env
+.env.*
+!.env.example
+!.env.local.example
+prompts/keys/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+*.egg-info/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+coverage/
+.npm-cache/
+*.tsbuildinfo
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+.vscode/
+!.vscode/extensions.json
